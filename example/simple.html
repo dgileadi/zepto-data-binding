@@ -1,0 +1,24 @@
+<html>
+<head>
+	<script type="text/javascript" src="zepto.min.js"></script>
+	<script type="text/javascript" src="../src/binder.js"></script>
+	<script type="text/javascript">
+		binder.scope.color = 'blue';
+		binder.scope.name = 'World';
+	</script>
+	<title>Hello</title>
+</head>
+<body>
+	<p>Hello <span id="colored" bind-style="'color:' + color" bind="name"></span>!</p>
+	<form action="">
+		<p>
+			<label for="color">Color</label>
+			<input id="color" type="text" bind="color" immediate="true" />
+		</p>
+		<p>
+			<label for="name">Name</label>
+			<input id="name" type="text" bind="name" immediate="true" />
+		</p>
+	</form>
+</body>
+</html>

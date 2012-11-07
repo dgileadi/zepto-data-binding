@@ -1,0 +1,57 @@
+<html>
+<head>
+	<title>Todo List</title>
+	<style type="text/css">
+		.done { text-decoration: line-through; }
+	</style>
+	<script type="text/javascript" src="zepto.min.js"></script>
+	<script type="text/javascript" src="../src/binder.js"></script>
+	<script type="text/javascript">
+		binder.scope.items = [
+			{name: 'Feed the fish', done: true},
+			{name: 'Try this data binding plugin', done: false}
+		];
+		binder.scope.doneCount = function(done) {
+			var count = 0;
+			for (var i = 0; i < binder.scope.items.length; i++)
+				if (binder.scope.items[i].done == done)
+					count++;
+			return count;
+		}
+
+		$(document).ready(function() {
+			$('#addtodo').on('submit', function(e) {
+
+				var item = {name: $('#newtodo').val(), done: false};
+				binder.scope.items.push(item);
+				binder.sync();
+				$('#newtodo').val('');
+				e.preventDefault();
+			});
+
+			$('#archive').on('click', function(e) {
+
+				for (var i = 0; i < binder.scope.items.length; i++)
+					if (binder.scope.items[i].done)
+						binder.scope.items.splice(i, 1);
+				binder.sync();
+				e.preventDefault();
+			});
+		});
+	</script>
+</head>
+<body>
+	<h3>Todo</h3>
+	<span bind="doneCount(true)"></span> of <span bind="items.length"></span> remaining [ <a id="archive" href="#">archive</a> ]
+	<ol>
+		<li id="all-item" repeat="item in items | orderBy:['done', 'name']">
+			<input id="all-check" type="checkbox" bind-checked="item.done" />
+			<label for="all-check" id="all-name" bind-class="item.done ? 'done' : ''" bind="item.name"></label>
+		</li>
+	</ol>
+	<form id="addtodo" action="">
+		<input id="newtodo" type="text" name="newtodo" bind="newtodo" />
+		<input type="submit" value="Add" />
+	</form>
+</body>
+</html>
