@@ -44,8 +44,9 @@ $(document).ready(function() {
 		options : function(options) {
 
 			settings = $.extend( {
-				defaultPageTransition : 'fade',
-				domCache : false
+				numberSeparator: ',',
+				decimalSymbol: '.',
+				currencySymbol: '$'
 			}, options);
 		},
 
@@ -56,8 +57,6 @@ $(document).ready(function() {
 				inited = true;
 
 				$(document.body).binder('options', {});
-
-				// TODO: bind to the unload event?
 			}
 
 			// bind attributes
@@ -84,8 +83,6 @@ $(document).ready(function() {
 			$('[data-repeat]', this).each(function() {
 				$(this).binder('repeat', $(this).data('repeat'), scope);
 			});
-
-			// TODO: maybe handle controller attribute
 		},
 
 		bind : function(expression, scope, bindAttr, addTo) {
@@ -403,14 +400,6 @@ $(document).ready(function() {
 		});
 	}
 
-	currency = function(text, symbol) {
-		return (symbol || '$') + number(text, 2);
-	}
-
-	date = function(text) {
-		// TODO: really?  maybe http://blog.stevenlevithan.com/archives/date-time-format
-	}
-
 	filter = function(items, expression) {
 
 		if (!items || !expression)
@@ -451,55 +440,6 @@ $(document).ready(function() {
 		}
 
 		return items.filter(f);
-	}
-
-	json = function(value) {
-		return JSON.stringify(value);
-	}
-
-	limitTo = function(items, limit, start) {
-
-		if (items && items.length) {
-			if (start) {
-				if (start > 0 && start < items.length)
-					items = items.slice(start);
-				else if (start < 0 && -start < items.length)
-					items = items.slice(0, items.length + start);
-			}
-			if (limit > 0 && limit < items.length)
-				items = items.slice(0, limit);
-			else if (limit < 0 && -limit < items.length)
-				items = items.slice(items.length + limit);
-		}
-		return items;
-	}
-
-	lowercase = function(text) {
-		return text ? text.toLowerCase() : text;
-	}
-
-	number = function(number, fractionSize) {
-
-		if (!number)
-			return number;
-
-		number = String(number);
-		var decimalAt = number.indexOf('.');
-		if (decimalAt === -1) {
-			decimalAt = number.length;
-			if (fractionSize)
-				number += '.';
-		}
-		if (fractionSize) {
-			if (decimalAt + fractionSize + 1 < number.length)
-				number = number.slice(0, decimalAt + 1 + fractionSize);
-		}
-		decimalAt -= 3;
-		while (decimalAt > 3) {
-			number = number.slice(0, decimalAt) + ',' + number.slice(decimalAt);
-			decimalAt -= 3;
-		}
-		return number;
 	}
 
 	orderBy = function(items, expressions, reverse) {
@@ -547,6 +487,75 @@ $(document).ready(function() {
 			return 0;
 		});
 		return results;
+	}
+
+	limitTo = function(items, limit, start) {
+
+		if (items && items.length) {
+			if (start) {
+				if (start > 0 && start < items.length)
+					items = items.slice(start);
+				else if (start < 0 && -start < items.length)
+					items = items.slice(0, items.length + start);
+			}
+			if (limit > 0 && limit < items.length)
+				items = items.slice(0, limit);
+			else if (limit < 0 && -limit < items.length)
+				items = items.slice(items.length + limit);
+		}
+		return items;
+	}
+
+	number = function(number, fractionSize, separator, decimalSymbol) {
+
+		if (!number)
+			return number;
+		if (separator == null)
+			separator = settings.numberSeparator;
+		if (decimalSymbol == null)
+			decimalSymbol = settings.decimalSymbol;
+
+		number = String(number);
+		var decimalAt = number.indexOf('.');
+		if (decimalAt === -1) {
+			decimalAt = number.length;
+			if (fractionSize)
+				number += decimalSymbol;
+		} else if (decimalSymbol != '.') {
+			number = number.slice(0, decimalAt) + decimalSymbol + number.slice(decimalAt + 1);
+		}
+		if (fractionSize) {
+			if (decimalAt + fractionSize + 1 < number.length)
+				number = number.slice(0, decimalAt + 1 + fractionSize);
+			else
+				while (decimalAt + fractionSize + 1 > number.length)
+					number += '0';
+		}
+		decimalAt -= 3;
+		while (decimalAt > 0) {
+			number = number.slice(0, decimalAt) + separator + number.slice(decimalAt);
+			decimalAt -= 3;
+		}
+		return number;
+	}
+
+	currency = function(text, symbol, fractionSize, separator, decimalSymbol) {
+		return (symbol || settings.currencySymbol) + number(text, fractionSize || 2, separator, decimalSymbol);
+	}
+
+	date = function(date, format) {
+		// TODO: really?  maybe http://blog.stevenlevithan.com/archives/date-time-format
+		if (window.dateFormat)
+			return dateFormat(date, format);
+		return date;
+	}
+
+	json = function(value) {
+		return JSON.stringify(value);
+	}
+
+	lowercase = function(text) {
+		return text ? text.toLowerCase() : text;
 	}
 
 	uppercase = function(text) {
