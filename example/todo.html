@@ -1,11 +1,8 @@
 <html>
 <head>
 	<title>Todo List</title>
-	<style type="text/css">
-		.done { text-decoration: line-through; }
-	</style>
 	<script type="text/javascript" src="zepto.min.js"></script>
-	<script type="text/javascript" src="../src/binder.js"></script>
+	<script type="text/javascript" src="../min/binder.min.js"></script>
 	<script type="text/javascript">
 		binder.scope.items = [
 			{name: 'Feed the fish', done: true},
@@ -39,6 +36,9 @@
 			});
 		});
 	</script>
+	<style type="text/css">
+		.done { text-decoration: line-through; }
+	</style>
 </head>
 <body>
 	<h3>Todo</h3>

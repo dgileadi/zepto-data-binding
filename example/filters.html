@@ -1,12 +1,13 @@
 <html>
 <head>
+	<title>Filters</title>
 	<script type="text/javascript" src="zepto.min.js"></script>
 	<script type="text/javascript" src="http://stevenlevithan.com/assets/misc/date.format.js"></script>
-	<script type="text/javascript" src="../src/binder.js"></script>
+	<script type="text/javascript" src="../min/binder.min.js"></script>
 	<script type="text/javascript">
 		binder.scope.number = 123456.789;
 		binder.scope.date = new Date();
-		binder.scope.string = 'I like Jane & Joe';
+		binder.scope.string = 'I know Jane & Joe';
 		binder.scope.people = [
 			{
 				name: 'Jason',
@@ -31,38 +32,63 @@
 		binder.scope.multipleHobbies = function(person) {
 			return person.hobbies.length > 1;
 		}
-		binder.filters.personName = function(people) {
+		binder.filters.property = function(items, property) {
 			var names = '';
-			for (var i = 0; i < people.length; i++) {
+			for (var i = 0; i < items.length; i++) {
 				if (i > 0)
 					names += ', ';
-				names += people[i].name;
+				names += items[i][property];
 			}
 			return names;
 		}
 	</script>
-	<title>Filters</title>
+	<style type="text/css">
+		label {color: gray;}
+	</style>
 </head>
 <body>
-	<p>Default number: <span bind="number | number"></span></p>
-	<p>Custom number: <span bind="number * 10 | number:4:'_':';'"></span></p>
-	<p>Default currency: <span bind="number | currency"></span></p>
-	<p>Custom currency: <span bind="number | currency:'USD ':3"></span></p>
-	<p>Default date: <span bind="date | date"></span></p>
-	<p>Custom date: <span bind="date | date:'shortDate'"></span></p>
-	<p>Lowercase: <span bind="string | lowercase"></span></p>
-	<p>Uppercase: <span bind="string | uppercase"></span></p>
-	<p>Jason in JSON: <span bind="people[0] | json"></span></p>
-	<p>Limit of one: <span bind="people | limitTo:1 | personName"></span></p>
-	<p>Limit of one, last: <span bind="people | limitTo:-1 | personName"></span></p>
-	<p>Limit of one, starting at item 2: <span bind="people | limitTo:1:1 | personName"></span></p>
-	<p>Sorted by age: <span bind="people | orderBy:'age' | personName"></span></p>
-	<p>Reverse sorted by name: <span bind="people | orderBy:'name':true | personName"></span></p>
-	<p>Same sort another way: <span bind="people | orderBy:'-name' | personName"></span></p>
-	<p>Sorted by firstHobby function: <span bind="people | orderBy:firstHobby | personName"></span></p>
-	<p>Filtered by &quot;fish&quot;: <span bind="people | filter:'fish' | personName"></span></p>
-	<p>Filtered by nineYearOlds object: <span bind="people | filter:nineYearOlds | personName"></span></p>
-	<p>Filtered by multipleHobbies function: <span bind="people | filter:multipleHobbies | personName"></span></p>
+	<form>
+		<h2>Numbers</h2>
+		<p>
+			<label>Number:</label>
+			<input type="number" bind="number" immediate="true" />
+		</p>
+		<p><label>Default number:</label> <span bind="number | number"></span></p>
+		<p><label>Custom number:</label> <span bind="number * 10 | number:4:'_':';'"></span></p>
+		<p><label>Default currency:</label> <span bind="number | currency"></span></p>
+		<p><label>Custom currency:</label> <span bind="number | currency:'USD ':3"></span></p>
+
+		<h2>Dates</h2>
+		<p><label>Default format:</label> <span bind="date | date"></span></p>
+		<p><label>Custom format:</label> <span bind="date | date:'shortDate'"></span></p>
+
+		<h2>Text</h2>
+		<p>
+			<label>Text:</label>
+			<input type="text" bind="string" immediate="true" />
+		</p>
+		<p><label>Lowercase:</label> <span bind="string | lowercase"></span></p>
+		<p><label>Uppercase:</label> <span bind="string | uppercase"></span></p>
+
+		<h2>Objects</h2>
+		<p><label>Jason in JSON:</label> <span bind="people[0] | json"></span></p>
+		<p><label>Nadia's info:</label></p>
+		<ul>
+			<li repeat="prop, value in people[1]">
+				<label bind="prop"></label>: <span bind="value"></span>
+			</li>
+		</ul>
+		<p><label>Limit of one:</label> <span bind="people | limitTo:1 | property:'name'"></span></p>
+		<p><label>Limit of one, last:</label> <span bind="people | limitTo:-1 | property:'name'"></span></p>
+		<p><label>Limit of one, starting at item 2:</label> <span bind="people | limitTo:1:1 | property:'name'"></span></p>
+		<p><label>Sorted by age:</label> <span bind="people | orderBy:'age' | property:'name'"></span></p>
+		<p><label>Reverse sorted by name:</label> <span bind="people | orderBy:'name':true | property:'name'"></span></p>
+		<p><label>Same sort another way:</label> <span bind="people | orderBy:'-name' | property:'name'"></span></p>
+		<p><label>Sorted by firstHobby function:</label> <span bind="people | orderBy:firstHobby | property:'name'"></span></p>
+		<p><label>Filtered by &quot;fish&quot;:</label> <span bind="people | filter:'fish' | property:'name'"></span></p>
+		<p><label>Filtered by nineYearOlds object:</label> <span bind="people | filter:nineYearOlds | property:'name'"></span></p>
+		<p><label>Filtered by multipleHobbies function:</label> <span bind="people | filter:multipleHobbies | property:'name'"></span></p>
+	</form>
 
 </body>
 </html>

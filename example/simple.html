@@ -1,12 +1,15 @@
 <html>
 <head>
+	<title>Hello</title>
 	<script type="text/javascript" src="zepto.min.js"></script>
-	<script type="text/javascript" src="../src/binder.js"></script>
+	<script type="text/javascript" src="../min/binder.min.js"></script>
 	<script type="text/javascript">
 		binder.scope.color = 'blue';
 		binder.scope.name = 'World';
 	</script>
-	<title>Hello</title>
+	<style type="text/css">
+		label {color: gray;}
+	</style>
 </head>
 <body>
 	<p>Hello <span id="colored" bind-style="'color:' + color" bind="name"></span>!</p>

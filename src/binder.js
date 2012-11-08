@@ -30,13 +30,6 @@ $(document).ready(function() {
 	var nextId				= 0,
 		inited				= false,
 		settings			= null,
-		bindAttributes		= ['bind-checked',
-								'bind-class',
-								'bind-disabled',
-								'bind-readonly',
-								'bind-selected',
-								'bind-src',
-								'bind-style'],
 		bindings			= {};
 
 	var methods = {
@@ -44,7 +37,14 @@ $(document).ready(function() {
 		options : function(options) {
 
 			settings = $.extend( {
-				numberSeparator: ',',
+				bindAttributes: ['bind-checked',
+								'bind-class',
+								'bind-disabled',
+								'bind-readonly',
+								'bind-selected',
+								'bind-src',
+								'bind-style'],
+				separatorSymbol: ',',
 				decimalSymbol: '.',
 				currencySymbol: '$'
 			}, options);
@@ -66,8 +66,8 @@ $(document).ready(function() {
 			$('[data-bind]', this).each(function() {
 				$(this).binder('bind', $(this).data('bind'), scope);
 			});
-			for (var i = 0; i < bindAttributes.length; i++) {
-				var attr = bindAttributes[i];
+			for (var i = 0; i < settings.bindAttributes.length; i++) {
+				var attr = settings.bindAttributes[i];
 				$('[' + attr + ']', this).each(function() {
 					$(this).binder('bind', $(this).attr(attr), scope, attr.slice(5));
 				});
@@ -96,7 +96,7 @@ $(document).ready(function() {
 
 				// listen for changes to the element
 				if (isInput) {
-					var callback = function(e) {$(this).binder('sync')};
+					var callback = function(e) {binder.sync()};
 					if ($(this).attr('immediate') || $(this).data('immediate'))
 						$(this).on('keyup', callback);
 					$(this).on('change', callback);
@@ -157,6 +157,16 @@ $(document).ready(function() {
 			var keyName = locals.length == 1 ? null : locals[0];
 			var varName = locals.length == 1 ? locals[0] : locals[1];
 
+			var updateRepeatScope = function(scope, first, value, prop) {
+
+				scope.first = first;
+				scope.middle = !first;
+				scope.last = false;
+				scope[varName] = value[prop];
+				if (keyName)
+					scope[keyName] = prop;
+			}
+
 			$(this).each(function() {
 
 				var master = $(this);
@@ -181,31 +191,24 @@ $(document).ready(function() {
 					// send in the clones
 					if (value) {
 						var previous = master;
-						var localScope;
+						var localScopes;
 						var first = true;
 						for (var prop in value) {
 							if (Object.prototype.hasOwnProperty.call(value, prop)) {
+
+								// find or create a clone
 								var cloneId = id + '_clone_' + prop;
 								var clone = $('#' + cloneId);
 								if (clone.length) {
 									clones = clones.not(clone);
-									var bound = findBindings($('[id]', clone));
-									for (var i = 0; i < bound.length; i++) {
-										localScope = bound[i].scope;
-										localScope[varName] = value[prop];
-										if (keyName)
-											localScope[keyName] = prop;
-									}
+									localScopes = findBindings($('[id]', clone));
+									for (var i = 0; i < localScopes.length; i++)
+										updateRepeatScope(localScopes[i].scope, first, value, prop);
 								} else {
-									localScope = new LocalScope(scope);
+									var localScope = new LocalScope(scope);
+									localScopes = [localScope];
 									localScope.index = prop;
-									localScope.first = first;
-									localScope.middle = !first;
-									localScope.last = false;
-									first = false;
-									localScope[varName] = value[prop];
-									if (keyName)
-										localScope[keyName] = prop;
+									updateRepeatScope(localScope, first, value, prop);
 
 									clone = master.clone();
 									clone.insertAfter(previous);
@@ -216,12 +219,15 @@ $(document).ready(function() {
 									clone.binder('init', localScope);
 									clone.show();
 								}
+
+								first = false;
 								previous = clone;
 							}
 						}
-						if (localScope) {
-							localScope.middle = false;
-							localScope.last = true;
+
+						for (var i = 0; i < localScopes.length; i++) {
+							localScopes[i].middle = false;
+							localScopes[i].last = true;
 						}
 					}
 
@@ -234,11 +240,6 @@ $(document).ready(function() {
 				binding.value = null;
 				binding.sync();
 			});
-		},
-
-		sync : function() {
-
-			binder.sync();
 		}
 
 	};
@@ -348,8 +349,8 @@ $(document).ready(function() {
 					this.domSetter(this.value);
 				else if (this.modelSetter && update === 'model')
 					this.modelSetter(this.scope, this.value);
-// if (update)
-// console.log('sync happened for ' + this.id + ': "' + this.value + '" to ' + update)
+if (update)
+console.log('sync happened for ' + this.id + ': "' + this.value + '" to ' + update)
 
 				return update != null;
 			},
@@ -512,12 +513,12 @@ $(document).ready(function() {
 		return items;
 	}
 
-	number = function(number, fractionSize, separator, decimalSymbol) {
+	number = function(number, fractionSize, separatorSymbol, decimalSymbol) {
 
 		if (!number)
 			return number;
-		if (separator == null)
-			separator = settings.numberSeparator;
+		if (separatorSymbol == null)
+			separatorSymbol = settings.separatorSymbol;
 		if (decimalSymbol == null)
 			decimalSymbol = settings.decimalSymbol;
 
@@ -539,14 +540,14 @@ $(document).ready(function() {
 		}
 		decimalAt -= 3;
 		while (decimalAt > 0) {
-			number = number.slice(0, decimalAt) + separator + number.slice(decimalAt);
+			number = number.slice(0, decimalAt) + separatorSymbol + number.slice(decimalAt);
 			decimalAt -= 3;
 		}
 		return number;
 	}
 
-	currency = function(text, symbol, fractionSize, separator, decimalSymbol) {
-		return (symbol || settings.currencySymbol) + number(text, fractionSize || 2, separator, decimalSymbol);
+	currency = function(text, symbol, fractionSize, separatorSymbol, decimalSymbol) {
+		return (symbol || settings.currencySymbol) + number(text, fractionSize || 2, separatorSymbol, decimalSymbol);
 	}
 
 	date = function(date, format) {
