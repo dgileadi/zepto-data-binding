@@ -42,7 +42,7 @@
 </head>
 <body>
 	<h3>Todo</h3>
-	<span bind="doneCount(true)"></span> of <span bind="items.length"></span> remaining [ <a id="archive" href="#">archive</a> ]
+	<span bind="doneCount(false)"></span> of <span bind="items.length"></span> remaining [ <a id="archive" href="#">archive</a> ]
 	<ol>
 		<li id="all-item" repeat="item in items | orderBy:['done', 'name']">
 			<input id="all-check" type="checkbox" bind-checked="item.done" />

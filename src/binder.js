@@ -37,7 +37,7 @@ $(document).ready(function() {
 								'bind-selected',
 								'bind-src',
 								'bind-style'],
-		bindings			= [];
+		bindings			= {};
 
 	var methods = {
 
@@ -85,12 +85,10 @@ $(document).ready(function() {
 			});
 		},
 
-		bind : function(expression, scope, bindAttr, addTo) {
+		bind : function(expression, scope, bindAttr) {
 
 			if (!expression)
 				return;
-			if (!addTo)
-				addTo = bindings;
 
 			$(this).each(function() {
 
@@ -134,7 +132,7 @@ $(document).ready(function() {
 				else
 					domSetter = function(value) {$(id).text(value)};
 
-				createBinding(id, modelGetter, modelSetter, domGetter, domSetter, scope, addTo);
+				createBinding(id, modelGetter, modelSetter, domGetter, domSetter, scope);
 			});
 		},
 
@@ -142,11 +140,7 @@ $(document).ready(function() {
 
 			$(this).each(function() {
 				var id = '#' + $(this).attr('id');
-				for (var i = 0; i < bindings.length; i++)
-					if (bindings[i].id == id) {
-						bindings.splice(i, 1);
-						i--;
-					}
+				delete bindings[id];
 			});
 			return this;
 		},
@@ -177,8 +171,7 @@ $(document).ready(function() {
 
 				var modelGetter = parseGetter(parts[1]);
 
-				var binding = createBinding('#' + id, modelGetter, null, null, function(){}, scope, bindings);
-				binding.bindings = [];
+				var binding = createBinding('#' + id, modelGetter, null, null, function(){}, scope);
 
 				binding.domSetter = function(value) {
 
@@ -220,7 +213,7 @@ $(document).ready(function() {
 									clone.attr('id', cloneId);
 									clone.attr('data-' + id + '_clone', true);
 									suffixIds(clone, '_clone_' + prop);
-									clone.binder('init', localScope, null, binding.bindings);
+									clone.binder('init', localScope);
 									clone.show();
 								}
 								previous = clone;
@@ -319,7 +312,7 @@ $(document).ready(function() {
 		}
 	}
 
-	createBinding = function(id, modelGetter, modelSetter, domGetter, domSetter, scope, bindings) {
+	createBinding = function(id, modelGetter, modelSetter, domGetter, domSetter, scope) {
 
 		if (!scope)
 			scope = binder.scope;
@@ -337,7 +330,7 @@ $(document).ready(function() {
 				// get the value
 				var update;
 				var model = this.modelGetter(this.scope);
-				if (model != this.value) {
+				if (!compareObjects(model, this.value)) {
 					this.value = model;
 					update = 'dom';
 				} else if (this.domGetter) {
@@ -358,21 +351,14 @@ $(document).ready(function() {
 // if (update)
 // console.log('sync happened for ' + this.id + ': "' + this.value + '" to ' + update)
 
-				// if we're updating the DOM to an object, we're synced
-				if (update == 'dom' && typeof this.value === 'object')
-					update = null;
-
-				var childUpdated = false;
-				if (this.bindings)
-					for (var i = 0; i < this.bindings.length; i++)
-						childUpdated |= this.bindings[i].sync();
-
-				return update != null || childUpdated;
+				return update != null;
 			},
 			isDirty : function() { return this.modelGetter(this.scope) != this.value || (this.domGetter && this.domGetter() != this.value); }
 		};
 		binding.sync();
-		bindings.push(binding);
+		if (!bindings[id])
+			bindings[id] = [];
+		bindings[id].push(binding);
 		return binding;
 	}
 
@@ -381,11 +367,29 @@ $(document).ready(function() {
 		var results = [];
 		$(elements).each(function() {
 			var id = '#' + $(this).attr('id');
-			for (var i = 0; i < bindings.length; i++)
-				if (bindings[i].id == id)
-					results.push(bindings[i]);
+			if (bindings[id])
+				results = results.concat(bindings[id]);
 		});
 		return results;
+	}
+
+	compareObjects = function(a, b) {
+
+		if (a == b)
+			return true;
+		else if (a == null || b == null)
+			return false;
+		else if (typeof a === 'object' && typeof b === 'object') {
+			if (a.length && b.length && a.length != b.length)
+				return false;
+			for (var prop in a)
+				if (Object.prototype.hasOwnProperty.call(a, prop))
+					if (a[prop] != b[prop])
+						return false;
+			// TODO: to really check this, we should also see if b has any properties that a doesn't
+			return true;
+		} else
+			return false;
 	}
 
 	suffixIds = function(element, suffix) {
@@ -399,6 +403,8 @@ $(document).ready(function() {
 			suffixIds($(this), suffix);
 		});
 	}
+
+	// Filters:
 
 	filter = function(items, expression) {
 
@@ -544,7 +550,7 @@ $(document).ready(function() {
 	}
 
 	date = function(date, format) {
-		// TODO: really?  maybe http://blog.stevenlevithan.com/archives/date-time-format
+		// use http://blog.stevenlevithan.com/archives/date-time-format if available
 		if (window.dateFormat)
 			return dateFormat(date, format);
 		return date;
@@ -583,8 +589,11 @@ $(document).ready(function() {
 			// synchronize all bindings; only loop for a maximum of ten times
 			for (var i = 0; i < 10; i++) {
 				var changed = false;
-				for (var j = 0; j < bindings.length; j++)
-					changed |= bindings[j].sync();
+				for (var id in bindings) {
+					var binding = bindings[id];
+					for (var j = 0; j < binding.length; j++)
+						changed |= binding[j].sync();
+				}
 
 				if (!changed)
 					break;
