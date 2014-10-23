@@ -265,6 +265,23 @@ $(document).ready(function() {
 
 	safeArgs = function(expression) {
 
+		// ignore quoted strings
+		var index = 0;
+		var safe = '';
+		var quoted = /(['"])([^'"\\]|\\.)*\1/g;
+		var match;
+		while ((match = quoted.exec(expression)) != null) {
+			if (match.index > index)
+				safe += safeArg(expression.substring(index, match.index));
+			safe += match[0];
+			index = quoted.lastIndex;
+		}
+		if (index < expression.length)
+			safe += safeArg(expression.substring(index));
+		return safe;
+	}
+
+	safeArg = function(expression) {
 		// make expressions null-safe: turn a.b into (a||{}).b
 		var safe = expression;
 		var result;
@@ -358,8 +375,8 @@ $(document).ready(function() {
 					this.domSetter(this.value);
 				else if (this.modelSetter && update === 'model')
 					this.modelSetter(this.scope, this.value);
-if (update)
-console.log('sync happened for ' + this.id + ': "' + this.value + '" to ' + update)
+// if (update)
+// console.log('sync happened for ' + this.id + ': "' + this.value + '" to ' + update)
 
 				return update != null;
 			},
