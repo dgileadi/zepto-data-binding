@@ -124,7 +124,16 @@ $(document).ready(function() {
 					domSetter = function(value) {
 						if (typeof value === 'boolean')
 							$(id).prop(bindAttr, value);
-						else
+						else if (bindAttr == 'class') {
+							var prev = $(id).data('zdb-class');
+							if (prev)
+								$(id).removeClass(prev);
+							if (value && value != prev) {
+								if (!$(id).hasClass(value))
+									$(id).addClass(value);
+							}
+							$(id).data('zdb-class', value);
+						} else
 							$(id).attr(bindAttr, value);
 					};
 				} else if (isInput)

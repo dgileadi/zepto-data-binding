@@ -1,0 +1,33 @@
+<html>
+<head>
+	<title>Hello</title>
+	<script type="text/javascript" src="zepto.min.js"></script>
+	<script type="text/javascript" src="../min/binder.min.js"></script>
+	<script type="text/javascript">
+		binder.scope.color = 'blue';
+		binder.scope.name = 'World';
+	</script>
+	<style type="text/css">
+		label {color: gray;}
+		.bold {font-weight: bold;}
+		.blue {color: blue;}
+		.red {color: red;}
+	</style>
+</head>
+<body>
+	<p>Hello <span id="colored" class="bold" bind-class="color" bind="name"></span>!</p>
+	<form action="">
+		<p>
+			<label for="color">Color</label>
+			<select id="color" bind="color" immediate="true">
+				<option value="blue">Blue</option>
+				<option value="red">Red</option>
+			</select>
+		</p>
+		<p>
+			<label for="name">Name</label>
+			<input id="name" type="text" bind="name" immediate="true" />
+		</p>
+	</form>
+</body>
+</html>
