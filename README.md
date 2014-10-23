@@ -1,6 +1,8 @@
 Zepto plugin for Data Binding
 ==================
 
+## Please note that this library has never been properly tested and does contain bugs. Feel free to fix and submit pull requests, or else file them and I'll fix when I get some time.
+
 Plugin for [Zepto.js](http://zeptojs.com) that provides Javascript data binding between DOM elements and Javascript objects.  It is inspired by the binding API that [AngularJS](http://angularjs.org) provides, but limits itself to databinding and therefore is much more lightweight (about 7k).
 
 ## Example ##
