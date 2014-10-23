@@ -268,7 +268,7 @@ $(document).ready(function() {
 		// ignore quoted strings
 		var index = 0;
 		var safe = '';
-		var quoted = /(['"])([^'"\\]|\\.)*\1/g;
+		var quoted = /"([^\\"]|\\.)*"|'([^\\']|\\.)*'/g;
 		var match;
 		while ((match = quoted.exec(expression)) != null) {
 			if (match.index > index)
