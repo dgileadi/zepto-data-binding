@@ -126,7 +126,7 @@ $(document).ready(function() {
 							$(id).prop(bindAttr, value);
 						else if (bindAttr == 'class') {
 							var prev = $(id).data('zdb-class');
-							if (prev)
+							if (prev && value != prev)
 								$(id).removeClass(prev);
 							if (value && value != prev) {
 								if (!$(id).hasClass(value))
