@@ -214,7 +214,7 @@ $(document).ready(function() {
 									for (var i = 0; i < localScopes.length; i++)
 										updateRepeatScope(localScopes[i].scope, first, value, prop);
 								} else {
-									var localScope = new LocalScope(scope);
+									var localScope = createScope(scope);
 									localScopes = [localScope];
 									localScope.index = prop;
 									updateRepeatScope(localScope, first, value, prop);
@@ -595,6 +595,13 @@ $(document).ready(function() {
 		return text ? text.toUpperCase() : text;
 	}
 
+	// local scope that falls back to the parent scope
+	createScope = function(parent) {
+		if (parent === undefined)
+			parent = binder.scope;
+		return Object.create(parent);
+	}
+
 	// create the global scope object
 	window.binder = {
 		scope: {
@@ -628,10 +635,5 @@ $(document).ready(function() {
 // console.log('finished looping after ' + i + ' times')
 		}
 	};
-
-	// local scope that falls back to the global scope
-	LocalScope = function(parent) {
-		this.prototype = binder.scope;
-	}
 
 })( Zepto );
